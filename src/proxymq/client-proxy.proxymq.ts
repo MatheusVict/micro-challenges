@@ -15,7 +15,7 @@ export class ClientProxySmartRanking {
     return ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
-        urls: [process.env.AWS_RABBITMQ],
+        urls: [process.env.RABBIT_MQ_CONNECTION],
         queue: 'admin-backend',
       },
     });
@@ -25,7 +25,7 @@ export class ClientProxySmartRanking {
     return ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
-        urls: [process.env.AWS_RABBITMQ],
+        urls: [process.env.RABBIT_MQ_CONNECTION],
         queue: 'challenges',
       },
     });

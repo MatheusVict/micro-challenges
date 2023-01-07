@@ -6,13 +6,14 @@ import { ClientProxySmartRanking } from 'src/proxymq/client-proxy.proxymq';
 import { ChallengesInterface } from 'src/challenges/interfaces/challenges.interface';
 import { RpcException } from '@nestjs/microservices';
 import { ChallengesService } from 'src/challenges/challenges.service';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class MatchService {
   constructor(
     @InjectModel('match')
     private readonly matchModel: Model<MatchInterface>,
-    private readonly clientProxySmartRanking: ClientProxySmartRanking,
+    private clientProxySmartRanking: ClientProxySmartRanking,
     private readonly challengesService: ChallengesService,
   ) {}
   private readonly logger = new Logger(MatchService.name);
@@ -40,14 +41,23 @@ export class MatchService {
 
       this.logger.log('Pouco antes de erro');
 
-      const challenges: ChallengesInterface =
-        await this.challengesService.getChallengeForId(match.challenge);
+      const challenge: ChallengesInterface = await firstValueFrom(
+        this.clientChallangesProxy.send('consultar-desafio', {
+          idplayer: '',
+          _id: match.challenge,
+        }),
+      );
 
       //Acionamos o tópico "atualizar-desafio-partida"
       //que será responsável por atualizar o desafio
-      this.logger.log(JSON.stringify(challenges));
+      this.logger.log(JSON.stringify(challenge));
 
-      await this.challengesService.updateChallengeMatch(idMatch, challenges);
+      await lastValueFrom(
+        this.clientChallangesProxy.emit('atualizar-desafio-partida', {
+          idMatch,
+          challenge,
+        }),
+      );
     } catch (error) {
       this.logger.error(JSON.stringify(error));
       throw new RpcException(`Match ERRO: ${JSON.stringify(error)}`);

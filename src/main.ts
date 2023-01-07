@@ -17,6 +17,7 @@ async function bootstrap() {
       },
     },
   );
+
   await app
     .listen()
     .then(() => logger.log('Microservice online'))

@@ -6,7 +6,6 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { ClientProxySmartRanking } from 'src/proxymq/client-proxy.proxymq';
 import { ChallengesInterface } from './interfaces/challenges.interface';
 import { ChallengesService } from './challenges.service';
 
@@ -14,16 +13,7 @@ const ackErros: string[] = ['E11000'];
 
 @Controller('challenges')
 export class ChallengesController {
-  constructor(
-    private readonly clientProxySmartRanking: ClientProxySmartRanking,
-    private readonly challengesService: ChallengesService,
-  ) {}
-
-  private clientChallenges =
-    this.clientProxySmartRanking.getClientProxyChallengesInstance();
-
-  private clientAdminBackEnd =
-    this.clientProxySmartRanking.getClientProxyAdminBackendInstance();
+  constructor(private readonly challengesService: ChallengesService) {}
 
   private readonly logger = new Logger(ChallengesController.name);
 
@@ -58,7 +48,9 @@ export class ChallengesController {
     const originMessage = context.getMessage();
 
     try {
-      const { idplayer, _id } = data;
+      const idplayer: string = data.idplayer;
+      const _id: string = data._id;
+      this.logger.log(`Controller de busca desafio ${JSON.stringify(data)}`);
 
       if (idplayer) {
         return await this.challengesService.getChallengesofPlayer(idplayer);

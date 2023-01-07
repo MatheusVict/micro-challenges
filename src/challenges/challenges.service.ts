@@ -54,10 +54,10 @@ export class ChallengesService {
 
   async getChallengeForId(_id: string): Promise<ChallengesInterface> {
     try {
-      return await this.challengesModel.findOne({ _id });
+      return await this.challengesModel.findOne({ _id }).exec();
     } catch (error) {
       this.logger.error(error.message);
-      throw new RpcException(error.message);
+      throw new RpcException(`Erro em pegar o id ${error.message}`);
     }
   }
 
@@ -86,7 +86,7 @@ export class ChallengesService {
         { $set: challenge },
       );
     } catch (error) {
-      this.logger.error(error.message);
+      this.logger.error(JSON.stringify(error.message));
       throw new RpcException(error.message);
     }
   }

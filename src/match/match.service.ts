@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { ClientProxySmartRanking } from 'src/proxymq/client-proxy.proxymq';
 import { ChallengesInterface } from 'src/challenges/interfaces/challenges.interface';
 import { RpcException } from '@nestjs/microservices';
-import { ChallengesService } from 'src/challenges/challenges.service';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 @Injectable()
@@ -14,14 +13,16 @@ export class MatchService {
     @InjectModel('match')
     private readonly matchModel: Model<MatchInterface>,
     private clientProxySmartRanking: ClientProxySmartRanking,
-    private readonly challengesService: ChallengesService,
   ) {}
   private readonly logger = new Logger(MatchService.name);
 
   private clientChallangesProxy =
     this.clientProxySmartRanking.getClientProxyChallengesInstance();
 
-  async createMatch(match: MatchInterface) {
+  private clientRanking =
+    this.clientProxySmartRanking.getClientProxyRankingInstance();
+
+  async createMatch(match: MatchInterface): Promise<MatchInterface> {
     try {
       //Iremos persistir a partida e lego em seguida atualizaremos o desafio.
       //O desafio irá receber o ID da partida e seu status será modificado para REALIZADO
@@ -56,6 +57,18 @@ export class MatchService {
         this.clientChallangesProxy.emit('atualizar-desafio-partida', {
           idMatch,
           challenge,
+        }),
+      );
+
+      /*
+      Enviamos a partida para o microservice rankings
+      indicando a necessidade de processamento de partidas
+      */
+
+      return await lastValueFrom(
+        this.clientRanking.emit('processar-partida', {
+          idMatch,
+          match,
         }),
       );
     } catch (error) {

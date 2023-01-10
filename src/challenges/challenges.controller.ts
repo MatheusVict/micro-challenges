@@ -35,7 +35,7 @@ export class ChallengesController {
         error.message.includes(ackErro),
       );
 
-      if (filterAckErros) await channel.ack(originMessage);
+      if (filterAckErros.length > 0) await channel.ack(originMessage);
     }
   }
 
@@ -80,7 +80,7 @@ export class ChallengesController {
         error.message.includes(ackErro),
       );
 
-      if (filterAckErros) await channel.ack(originMessage);
+      if (filterAckErros.length > 0) await channel.ack(originMessage);
     }
   }
 
@@ -101,7 +101,7 @@ export class ChallengesController {
         error.message.includes(ackErro),
       );
 
-      if (filterAckErros) await channel.ack(originMessage);
+      if (filterAckErros.length > 0) await channel.ack(originMessage);
     }
   }
 
@@ -122,7 +122,7 @@ export class ChallengesController {
         error.message.includes(ackErro),
       );
 
-      if (filterAckErros) await channel.ack(originMessage);
+      if (filterAckErros.length > 0) await channel.ack(originMessage);
     }
   }
 }

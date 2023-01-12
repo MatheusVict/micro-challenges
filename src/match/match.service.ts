@@ -24,24 +24,17 @@ export class MatchService {
 
   async createMatch(match: MatchInterface): Promise<MatchInterface> {
     try {
-      //Iremos persistir a partida e lego em seguida atualizaremos o desafio.
-      //O desafio irá receber o ID da partida e seu status será modificado para REALIZADO
+      /*Iremos persistir a partida e logo em seguida atualizaremos o desafio.
+      O desafio irá receber o ID da partida e seu status será modificado para REALIZADO*/
 
       const matchCreated = new this.matchModel(match);
-      this.logger.log(`Criando: ${JSON.stringify(match)}`);
 
       //Recuperamos o ID da partida
 
       const result = await matchCreated.save();
-      this.logger.log(`Id do do desafio: ${JSON.stringify(match.challenge)}`);
-      this.logger.log(`Salvando ${JSON.stringify(result)}`);
       const idMatch = result._id;
-      this.logger.log(`Id da partida ${JSON.stringify(idMatch)}`);
 
       //Com o ID do desafio que recebemos na requisição, recuperamos o desafio
-
-      this.logger.log('Pouco antes de erro');
-
       const challenge: ChallengesInterface = await firstValueFrom(
         this.clientChallangesProxy.send('consultar-desafio', {
           idplayer: '',
@@ -72,8 +65,8 @@ export class MatchService {
         }),
       );
     } catch (error) {
-      this.logger.error(JSON.stringify(error));
-      throw new RpcException(`Match ERRO: ${JSON.stringify(error)}`);
+      this.logger.error(JSON.stringify(error.message));
+      throw new RpcException(`Match ERRO: ${JSON.stringify(error.message)}`);
     }
   }
 }

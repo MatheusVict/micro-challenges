@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { ChallengesInterface } from './interfaces/challenges.interface';
 import { ChallengeStatus } from './enums/challenges.enum';
 import { RpcException } from '@nestjs/microservices';
+import * as momentTimezone from 'moment-timezone';
 
 @Injectable()
 export class ChallengesService {
@@ -87,6 +88,50 @@ export class ChallengesService {
       );
     } catch (error) {
       this.logger.error(JSON.stringify(error.message));
+      throw new RpcException(error.message);
+    }
+  }
+
+  async consultChallengesAccomplished(
+    idCategory: string,
+  ): Promise<ChallengesInterface[]> {
+    try {
+      return await this.challengesModel
+        .find()
+        .where('category')
+        .equals(idCategory)
+        .where('status')
+        .equals(ChallengeStatus.REALIZADO)
+        .exec();
+    } catch (error) {
+      this.logger.error(`Erro: ${JSON.stringify(error.message)}`);
+      throw new RpcException(error.message);
+    }
+  }
+
+  async consultChallengesAccomplishedByDate(
+    idCategory: string,
+    dataRef: string,
+  ) {
+    try {
+      const dataRefNew = `${dataRef} 23:59:59.999`;
+      this.logger.log(
+        `Data formatada: ${momentTimezone(dataRefNew).tz('UTC')}`,
+      );
+      return await this.challengesModel
+        .find()
+        .where('category')
+        .equals(idCategory)
+        .where('status')
+        .equals(ChallengeStatus.REALIZADO)
+        .where('DateTimeChallenge', {
+          $lte: momentTimezone(dataRefNew)
+            .tz('UTC')
+            .format('YYYY-MM-DD HH:mm:ss.SSS+00:00'),
+        })
+        .exec();
+    } catch (error) {
+      this.logger.error(`Erro: ${JSON.stringify(error.message)}`);
       throw new RpcException(error.message);
     }
   }

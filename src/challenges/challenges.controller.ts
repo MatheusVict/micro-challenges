@@ -105,6 +105,31 @@ export class ChallengesController {
     }
   }
 
+  @MessagePattern('consultar-desafio-realizado')
+  async consultChallengesAccomplishedByDate(
+    @Payload() data: any,
+    @Ctx() context: RmqContext,
+  ): Promise<ChallengesInterface[] | ChallengesInterface> {
+    const channel = context.getChannelRef();
+    const originMessage = context.getMessage();
+
+    try {
+      const { idCategory, dataRef } = data;
+      this.logger.log(`data: ${JSON.stringify(data)}`);
+      if (dataRef)
+        return await this.challengesService.consultChallengesAccomplishedByDate(
+          idCategory,
+          dataRef,
+        );
+      else
+        return await this.challengesService.consultChallengesAccomplished(
+          idCategory,
+        );
+    } finally {
+      await channel.ack(originMessage);
+    }
+  }
+
   @EventPattern('deletar-desafio')
   async deleteChallenge(
     @Payload() idchallenge: string,

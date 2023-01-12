@@ -5,13 +5,19 @@ import { ChallengesInterface } from './interfaces/challenges.interface';
 import { ChallengeStatus } from './enums/challenges.enum';
 import { RpcException } from '@nestjs/microservices';
 import * as momentTimezone from 'moment-timezone';
+import { lastValueFrom } from 'rxjs';
+import { ClientProxySmartRanking } from 'src/proxymq/client-proxy.proxymq';
 
 @Injectable()
 export class ChallengesService {
   constructor(
     @InjectModel('challenges')
     private readonly challengesModel: Model<ChallengesInterface>,
+    private clientProxySmartRanking: ClientProxySmartRanking,
   ) {}
+
+  private clienteNotifications =
+    this.clientProxySmartRanking.getClientProxyNotificationsInstance();
 
   private readonly logger = new Logger(ChallengesService.name);
 
@@ -26,7 +32,11 @@ export class ChallengesService {
 
       challengeCreatede.status = ChallengeStatus.PENDENTE;
       this.logger.log(JSON.stringify(challengeCreatede));
-      return await challengeCreatede.save();
+      await challengeCreatede.save();
+
+      return await lastValueFrom(
+        this.clienteNotifications.emit('notificacao-novo-desafio', challenge),
+      );
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
